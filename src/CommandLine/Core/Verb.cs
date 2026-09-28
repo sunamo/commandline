@@ -1,35 +1,47 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 namespace CommandLine.Core
-{
+
     sealed class Verb
     {
-        public Verb(string name, string helpText, bool hidden, bool isDefault, string[] aliases)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
-            Name = name;
+        private readonly string name;
+        private readonly string helpText;
+        private readonly bool hidden;
+        private readonly bool isDefault;
 
-            HelpText = helpText ?? throw new ArgumentNullException(nameof(helpText));
-            Hidden = hidden;
-            IsDefault = isDefault;
-            Aliases = aliases ?? new string[0];
+        public Verb(string name, string helpText, bool hidden = false, bool isDefault = false)
+        {
+            if ( string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+            this.name = name;
+
+            this.helpText = helpText ?? throw new ArgumentNullException(nameof(helpText));
+            this.hidden = hidden;
+            this.isDefault = isDefault;
         }
 
-        public string Name { get; private set; }
+        public string Name
+        {
+            get { return name; }
+        }
 
-        public string HelpText { get; private set; }
+        public string HelpText
+        {
+            get { return helpText; }
+        }
 
-        public bool Hidden { get; private set; }
+        public bool Hidden
+        {
+            get { return hidden; }
+        }
 
-        public bool IsDefault { get; private set; }
-
-        public string[] Aliases { get; private set; }
+        public bool IsDefault
+        {
+            get => isDefault;
+        }
 
         public static Verb FromAttribute(VerbAttribute attribute)
         {
@@ -37,8 +49,7 @@ namespace CommandLine.Core
                 attribute.Name,
                 attribute.HelpText,
                 attribute.Hidden,
-                attribute.IsDefault,
-                attribute.Aliases
+                attribute.IsDefault
                 );
         }
 

@@ -1,11 +1,9 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Globalization;
 using System.Text;
 
 namespace CommandLine.Infrastructure
-{
+
     static class StringExtensions
     {
         public static string ToOneCharString(this char c)
@@ -72,24 +70,6 @@ namespace CommandLine.Infrastructure
         public static bool ToBoolean(this string value)
         {
             return value.Equals("true", StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static bool ToBooleanLoose(this string value)
-        {
-            if ((string.IsNullOrEmpty(value)) ||
-                (value == "0") ||
-                (value.Equals("f", StringComparison.OrdinalIgnoreCase)) ||
-                (value.Equals("n", StringComparison.OrdinalIgnoreCase)) ||
-                (value.Equals("no", StringComparison.OrdinalIgnoreCase)) ||
-                (value.Equals("off", StringComparison.OrdinalIgnoreCase)) ||
-                (value.Equals("false", StringComparison.OrdinalIgnoreCase)))
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
         }
     }
 }

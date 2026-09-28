@@ -1,4 +1,4 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
+// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace CommandLine.Core
         {
             var option = specifications.FirstOrDefault(a => name.MatchName(a.ShortName, a.LongName, comparer));
             if (option == null) return NameLookupResult.NoOptionFound;
-            return option.ConversionType == typeof(bool) || (option.ConversionType == typeof(int) && option.FlagCounter)
+            return option.ConversionType == typeof(bool)
                 ? NameLookupResult.BooleanOptionFound
                 : NameLookupResult.OtherOptionFound;
         }

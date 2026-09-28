@@ -1,9 +1,12 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace CommandLine.Infrastructure
 {
-    internal class LocalizableAttributeProperty
+    public class LocalizableAttributeProperty
     {
         private string _propertyName;
         private string _value;
@@ -40,16 +43,15 @@ namespace CommandLine.Infrastructure
                 return _value;
             if (_localizationPropertyInfo == null)
             {
-                // Static class IsAbstract
+                // Static class IsAbstract 
                 if (!_type.IsVisible)
                     throw new ArgumentException($"Invalid resource type '{_type.FullName}'! {_type.Name} is not visible for the parser! Change resources 'Access Modifier' to 'Public'", _propertyName);
                 PropertyInfo propertyInfo = _type.GetProperty(_value, BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Static);
-                if (propertyInfo == null || !propertyInfo.CanRead || (propertyInfo.PropertyType != typeof(string) && !propertyInfo.PropertyType.CanCast<string>()))
-                    throw new ArgumentException($"Invalid resource property name! Localized value: {_value}", _propertyName);
+                if (propertyInfo == null || !propertyInfo.CanRead || propertyInfo.PropertyType != typeof(string))
+                    throw new ArgumentException("Invalid resource property name! Localized value: {_value}", _propertyName);
                 _localizationPropertyInfo = propertyInfo;
             }
-
-            return _localizationPropertyInfo.GetValue(null, null).Cast<string>();
+            return (string)_localizationPropertyInfo.GetValue(null, null);
         }
     }
 

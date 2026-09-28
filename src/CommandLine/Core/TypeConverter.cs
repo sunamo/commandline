@@ -1,5 +1,3 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,16 +8,14 @@ using RailwaySharp.ErrorHandling;
 using System.Reflection;
 
 namespace CommandLine.Core
-{
+
     static class TypeConverter
     {
-        public static Maybe<object> ChangeType(IEnumerable<string> values, Type conversionType, bool scalar, bool isFlag, CultureInfo conversionCulture, bool ignoreValueCase)
+        public static Maybe<object> ChangeType(IEnumerable<string> values, Type conversionType, bool scalar, CultureInfo conversionCulture, bool ignoreValueCase)
         {
-            return isFlag
-                ? ChangeTypeFlagCounter(values, conversionType, conversionCulture, ignoreValueCase)
-                : scalar
-                    ? ChangeTypeScalar(values.Last(), conversionType, conversionCulture, ignoreValueCase)
-                    : ChangeTypeSequence(values, conversionType, conversionCulture, ignoreValueCase);
+            return scalar
+                ? ChangeTypeScalar(values.Single(), conversionType, conversionCulture, ignoreValueCase)
+                : ChangeTypeSequence(values, conversionType, conversionCulture, ignoreValueCase);
         }
 
         private static Maybe<object> ChangeTypeSequence(IEnumerable<string> values, Type conversionType, CultureInfo conversionCulture, bool ignoreValueCase)
@@ -46,14 +42,6 @@ namespace CommandLine.Core
             result.Match((_,__) => { }, e => e.First().RethrowWhenAbsentIn(
                 new[] { typeof(InvalidCastException), typeof(FormatException), typeof(OverflowException) }));
             return result.ToMaybe();
-        }
-
-        private static Maybe<object> ChangeTypeFlagCounter(IEnumerable<string> values, Type conversionType, CultureInfo conversionCulture, bool ignoreValueCase)
-        {
-            var converted = values.Select(value => ChangeTypeScalar(value, typeof(bool), conversionCulture, ignoreValueCase));
-            return converted.Any(maybe => maybe.MatchNothing())
-                ? Maybe.Nothing<object>()
-                : Maybe.Just((object)converted.Count(value => value.IsJust()));
         }
 
         private static object ConvertString(string value, Type type, CultureInfo conversionCulture)
@@ -139,20 +127,11 @@ namespace CommandLine.Core
             {
                 throw new FormatException();
             }
-            if (IsDefinedEx(parsedValue))
+            if (Enum.IsDefined(conversionType, parsedValue))
             {
                 return parsedValue;
             }
             throw new FormatException();
-        }
-
-        private static bool IsDefinedEx(object enumValue)
-        {
-            char firstChar = enumValue.ToString()[0];
-            if (Char.IsDigit(firstChar) || firstChar == '-')
-                return false;
-
-            return true;
         }
     }
 }

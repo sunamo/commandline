@@ -1,4 +1,4 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
+// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -35,7 +35,6 @@ namespace CommandLine.Core
                 specification.ConversionType,
                 specification.TargetType,
                 specification.Group,
-                specification.FlagCounter,
                 specification.Hidden);
         }
 

@@ -1,4 +1,4 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
+// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -15,40 +15,33 @@ namespace CommandLine.Core
             MapValues(
                 IEnumerable<SpecificationProperty> propertyTuples,
                 IEnumerable<KeyValuePair<string, IEnumerable<string>>> options,
-                Func<IEnumerable<string>, Type, bool, bool, Maybe<object>> converter,
+                Func<IEnumerable<string>, Type, bool, Maybe<object>> converter,
                 StringComparer comparer)
         {
             var sequencesAndErrors = propertyTuples
                 .Select(
                     pt =>
                     {
-                        var matched = options.Where(s =>
+                        var matched = options.FirstOrDefault(s =>
                             s.Key.MatchName(((OptionSpecification)pt.Specification).ShortName, ((OptionSpecification)pt.Specification).LongName, comparer)).ToMaybe();
-                        if (matched.IsJust())
-                        {
-                            var matches = matched.GetValueOrDefault(Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>());
-                            var values = new List<string>();
-                            foreach (var kvp in matches)
-                            {
-                                foreach (var value in kvp.Value)
-                                {
-                                    values.Add(value);
-                                }
-                            }
-
-                            bool isFlag = pt.Specification.Tag == SpecificationType.Option && ((OptionSpecification)pt.Specification).FlagCounter;
-
-                            return converter(values, isFlag ? typeof(bool) : pt.Property.PropertyType, pt.Specification.TargetType != TargetType.Sequence, isFlag)
-                                .Select(value => Tuple.Create(pt.WithValue(Maybe.Just(value)), Maybe.Nothing<Error>()))
+                        return matched.IsJust()
+                            ? (
+                                from sequence in matched
+                                from converted in
+                                    converter(
+                                        sequence.Value,
+                                        pt.Property.PropertyType,
+                                        pt.Specification.TargetType != TargetType.Sequence)
+                                select Tuple.Create(
+                                    pt.WithValue(Maybe.Just(converted)), Maybe.Nothing<Error>())
+                               )
                                 .GetValueOrDefault(
                                     Tuple.Create<SpecificationProperty, Maybe<Error>>(
                                         pt,
                                         Maybe.Just<Error>(
                                             new BadFormatConversionError(
-                                                ((OptionSpecification)pt.Specification).FromOptionSpecification()))));
-                        }
-
-                        return Tuple.Create(pt, Maybe.Nothing<Error>());
+                                                ((OptionSpecification)pt.Specification).FromOptionSpecification()))))
+                            : Tuple.Create(pt, Maybe.Nothing<Error>());
                     }
                 ).Memoize();
             return Result.Succeed(

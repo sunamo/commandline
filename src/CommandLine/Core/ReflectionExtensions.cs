@@ -1,16 +1,15 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using CommandLine.Infrastructure;
 using CommandLine.Text;
 using CSharpx;
 
 namespace CommandLine.Core
-{
+
     static class ReflectionExtensions
     {
         public static IEnumerable<T> GetSpecifications<T>(this Type type, Func<PropertyInfo, T> selector)
@@ -39,8 +38,8 @@ namespace CommandLine.Core
         {
             return
                 (from pi in type.FlattenHierarchy().SelectMany(x => x.GetTypeInfo().GetProperties())
-                    let attrs = pi.GetCustomAttributes(typeof(UsageAttribute), true)
-                    where attrs.Any()
+                    let attrs = pi.GetCustomAttributes(true)
+                    where attrs.OfType<UsageAttribute>().Any()
                     select Tuple.Create(pi, (UsageAttribute)attrs.First()))
                         .SingleOrDefault()
                         .ToMaybe();
@@ -120,12 +119,16 @@ namespace CommandLine.Core
 
         public static object GetDefaultValue(this Type type)
         {
-            return type.IsValueType ? Activator.CreateInstance(type) : null;
+            var e = Expression.Lambda<Func<object>>(
+                Expression.Convert(
+                    Expression.Default(type),
+                    typeof));
+            return e.Compile()();
         }
 
         public static bool IsMutable(this Type type)
         {
-            if(type == typeof(object))
+            if(type == typeof)
                 return true;
 
             // Find all inherited defined properties and fields on the type

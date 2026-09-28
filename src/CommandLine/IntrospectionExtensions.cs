@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ namespace CommandLine
 {
 #if NET40
  
-	internal static class IntrospectionExtensions
+	public static class IntrospectionExtensions
 	{
 		public static Type GetTypeInfo(this Type type)
 		{
@@ -17,4 +17,3 @@ namespace CommandLine
 	}
 #endif
 }
-

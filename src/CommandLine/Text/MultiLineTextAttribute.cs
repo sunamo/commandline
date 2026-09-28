@@ -1,14 +1,9 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Text;
 using System.Linq;
 
 namespace CommandLine.Text
-{
-    /// <summary>
-    /// Provides base properties for creating an attribute, used to define multiple lines of text.
-    /// </summary>
+
     public abstract class MultilineTextAttribute : Attribute
     {
         private readonly string line1;
@@ -147,13 +142,13 @@ namespace CommandLine.Text
             get { return line5; }
         }
 
-        internal HelpText AddToHelpText(HelpText helpText, Func<string, HelpText> func)
+        public HelpText AddToHelpText(HelpText helpText, Func<string, HelpText> func)
         {
             var strArray = new[] { line1, line2, line3, line4, line5 };
             return strArray.Take(GetLastLineWithText(strArray)).Aggregate(helpText, (current, line) => func(line));
         }
 
-        internal HelpText AddToHelpText(HelpText helpText, bool before)
+        public HelpText AddToHelpText(HelpText helpText, bool before)
         {
             // before flag only distinguishes which action is called, 
             // so refactor common code and call with appropriate func

@@ -1,5 +1,3 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +7,7 @@ using CSharpx;
 using RailwaySharp.ErrorHandling;
 
 namespace CommandLine.Core
-{
+
     static class InstanceChooser
     {
         public static ParserResult<object> Choose(
@@ -23,45 +21,20 @@ namespace CommandLine.Core
             bool autoVersion,
             IEnumerable<ErrorType> nonFatalErrors)
         {
-            return Choose(
-                tokenizer,
-                types,
-                arguments,
-                nameComparer,
-                ignoreValueCase,
-                parsingCulture,
-                autoHelp,
-                autoVersion,
-                false,
-                nonFatalErrors);
-        }
-
-        public static ParserResult<object> Choose(
-            Func<IEnumerable<string>, IEnumerable<OptionSpecification>, Result<IEnumerable<Token>, Error>> tokenizer,
-            IEnumerable<Type> types,
-            IEnumerable<string> arguments,
-            StringComparer nameComparer,
-            bool ignoreValueCase,
-            CultureInfo parsingCulture,
-            bool autoHelp,
-            bool autoVersion,
-            bool allowMultiInstance,
-            IEnumerable<ErrorType> nonFatalErrors)
-        {
             var verbs = Verb.SelectFromTypes(types);
             var defaultVerbs = verbs.Where(t => t.Item1.IsDefault);
-
+            
             int defaultVerbCount = defaultVerbs.Count();
             if (defaultVerbCount > 1)
                 return MakeNotParsed(types, new MultipleDefaultVerbsError());
 
             var defaultVerb = defaultVerbCount == 1 ? defaultVerbs.First() : null;
 
-            ParserResult<object> choose()
+            Func<ParserResult<object>> choose = () =>
             {
                 var firstArg = arguments.First();
 
-                bool preprocCompare(string command) =>
+                Func<string, bool> preprocCompare = command =>
                         nameComparer.Equals(command, firstArg) ||
                         nameComparer.Equals(string.Concat("--", command), firstArg);
 
@@ -71,8 +44,8 @@ namespace CommandLine.Core
                             arguments.Skip(1).FirstOrDefault() ?? string.Empty, nameComparer))
                     : (autoVersion && preprocCompare("version"))
                         ? MakeNotParsed(types, new VersionRequestedError())
-                        : MatchVerb(tokenizer, verbs, defaultVerb, arguments, nameComparer, ignoreValueCase, parsingCulture, autoHelp, autoVersion, allowMultiInstance, nonFatalErrors);
-            }
+                        : MatchVerb(tokenizer, verbs, defaultVerb, arguments, nameComparer, ignoreValueCase, parsingCulture, autoHelp, autoVersion, nonFatalErrors);
+            };
 
             return arguments.Any()
                 ? choose()
@@ -117,32 +90,22 @@ namespace CommandLine.Core
             CultureInfo parsingCulture,
             bool autoHelp,
             bool autoVersion,
-            bool allowMultiInstance,
             IEnumerable<ErrorType> nonFatalErrors)
         {
-            string firstArg = arguments.First();
-
-            var verbUsed = verbs.FirstOrDefault(vt =>
-                    nameComparer.Equals(vt.Item1.Name, firstArg)
-                    || vt.Item1.Aliases.Any(alias => nameComparer.Equals(alias, firstArg))
-            );
-
-            if (verbUsed == default)
-            {
-                return MatchDefaultVerb(tokenizer, verbs, defaultVerb, arguments, nameComparer, ignoreValueCase, parsingCulture, autoHelp, autoVersion, nonFatalErrors);
-            }
-            return InstanceBuilder.Build(
-                Maybe.Just<Func<object>>(
-                    () => verbUsed.Item2.AutoDefault()),
-                tokenizer,
-                arguments.Skip(1),
-                nameComparer,
-                ignoreValueCase,
-                parsingCulture,
-                autoHelp,
-                autoVersion,
-                allowMultiInstance,                
-                nonFatalErrors);
+            return verbs.Any(a => nameComparer.Equals(a.Item1.Name, arguments.First()))
+                ? InstanceBuilder.Build(
+                    Maybe.Just<Func<object>>(
+                        () =>
+                            verbs.Single(v => nameComparer.Equals(v.Item1.Name, arguments.First())).Item2.AutoDefault()),
+                    tokenizer,
+                    arguments.Skip(1),
+                    nameComparer,
+                    ignoreValueCase,
+                    parsingCulture,
+                    autoHelp,
+                    autoVersion,
+                    nonFatalErrors)
+                : MatchDefaultVerb(tokenizer, verbs, defaultVerb, arguments, nameComparer, ignoreValueCase, parsingCulture, autoHelp, autoVersion, nonFatalErrors);
         }
 
         private static HelpVerbRequestedError MakeHelpVerbRequestedError(

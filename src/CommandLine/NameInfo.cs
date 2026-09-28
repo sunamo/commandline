@@ -1,13 +1,8 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using CommandLine.Core;
 
 namespace CommandLine
-{
-    /// <summary>
-    /// Models name information, used in <see cref="CommandLine.Error"/> instances.
-    /// </summary>
+
     public sealed class NameInfo : IEquatable<NameInfo>
     {
         /// <summary>
@@ -18,7 +13,7 @@ namespace CommandLine
         private readonly string longName;
         private readonly string shortName;
 
-        internal NameInfo(string shortName, string longName)
+        public NameInfo(string shortName, string longName)
         {
             if (shortName == null) throw new ArgumentNullException("shortName");
             if (longName == null) throw new ArgumentNullException("longName");

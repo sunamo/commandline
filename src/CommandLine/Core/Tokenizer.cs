@@ -1,5 +1,3 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +7,7 @@ using RailwaySharp.ErrorHandling;
 using System.Text.RegularExpressions;
 
 namespace CommandLine.Core
-{
+
     static class Tokenizer
     {
         public static Result<IEnumerable<Token>, Error> Tokenize(
@@ -50,7 +48,7 @@ namespace CommandLine.Core
             if (arguments.Any(arg => arg.EqualsOrdinal("--")))
             {
                 var tokenizerResult = tokenizer(arguments.TakeWhile(arg => !arg.EqualsOrdinal("--")));
-                var values = arguments.SkipWhile(arg => !arg.EqualsOrdinal("--")).Skip(1).Select(Token.ValueForced);
+                var values = arguments.SkipWhile(arg => !arg.EqualsOrdinal("--")).Skip(1).Select(Token.Value);
                 return tokenizerResult.Map(tokens => tokens.Concat(values));
             }
             return tokenizer(arguments);
@@ -62,56 +60,44 @@ namespace CommandLine.Core
         {
             var tokens = tokenizerResult.SucceededWith().Memoize();
 
-            var exploded = new List<Token>(tokens is ICollection<Token> coll ? coll.Count : tokens.Count());
-            var nothing = Maybe.Nothing<char>();  // Re-use same Nothing instance for efficiency
-            var separator = nothing;
-            foreach (var token in tokens) {
-                if (token.IsName()) {
-                    separator = optionSequenceWithSeparatorLookup(token.Text);
-                    exploded.Add(token);
-                } else {
-                    // Forced values are never considered option values, so they should not be split
-                    if (separator.MatchJust(out char sep) && sep != '\0' && !token.IsValueForced()) {
-                        if (token.Text.Contains(sep)) {
-                            exploded.AddRange(token.Text.Split(sep).Select(Token.ValueFromSeparator));
-                        } else {
-                            exploded.Add(token);
-                        }
-                    } else {
-                        exploded.Add(token);
-                    }
-                    separator = nothing;  // Only first value after a separator can possibly be split
-                }
-            }
-            return Result.Succeed(exploded as IEnumerable<Token>, tokenizerResult.SuccessMessages());
+            var replaces = tokens.Select((t, i) =>
+                optionSequenceWithSeparatorLookup(t.Text)
+                    .MapValueOrDefault(sep => Tuple.Create(i + 1, sep),
+                        Tuple.Create(-1, '\0'))).SkipWhile(x => x.Item1 < 0).Memoize();
+
+            var exploded = tokens.Select((t, i) =>
+                        replaces.FirstOrDefault(x => x.Item1 == i).ToMaybe()
+                            .MapValueOrDefault(r => t.TextSH.Split(r.Item2).Select(Token.Value),
+                                Enumerable.Empty<Token>().Concat(new[] { t })));
+
+            var flattened = exploded.SelectMany(x => x);
+
+            return Result.Succeed(flattened, tokenizerResult.SuccessMessages());
         }
 
-        /// <summary>
-        /// Normalizes the given <paramref name="tokens"/>.
-        /// </summary>
-        /// <returns>The given <paramref name="tokens"/> minus all names, and their value if one was present, that are not found using <paramref name="nameLookup"/>.</returns>
         public static IEnumerable<Token> Normalize(
             IEnumerable<Token> tokens, Func<string, bool> nameLookup)
         {
-            var toExclude =
+            var indexes =
                 from i in
                     tokens.Select(
                         (t, i) =>
                         {
-                            if (t.IsName() == false
-                                || nameLookup(t.Text))
-                            {
-                                return Maybe.Nothing<Tuple<Token, Token>>();
-                            }
-
-                            var next = tokens.ElementAtOrDefault(i + 1).ToMaybe();
-                            var removeValue = next.MatchJust(out var nextValue)
-                                              && next.MapValueOrDefault(p => p.IsValue() && ((Value)p).ExplicitlyAssigned, false);
-                            return Maybe.Just(new Tuple<Token, Token>(t, removeValue ? nextValue : null));
+                            var prev = tokens.ElementAtOrDefault(i - 1).ToMaybe();
+                            return t.IsValue() && ((Value)t).ExplicitlyAssigned
+                                   && prev.MapValueOrDefault(p => p.IsName() && !nameLookup(p.Text), false)
+                                ? Maybe.Just(i)
+                                : Maybe.Nothing<int>();
                         }).Where(i => i.IsJust())
                 select i.FromJustOrFail();
 
-            var normalized = tokens.Where(t => toExclude.Any(e => ReferenceEquals(e.Item1, t) || ReferenceEquals(e.Item2, t)) == false);
+            var toExclude =
+                from t in
+                    tokens.Select((t, i) => indexes.Contains(i) ? Maybe.Just(t) : Maybe.Nothing<Token>())
+                        .Where(t => t.IsJust())
+                select t.FromJustOrFail();
+
+            var normalized = tokens.Where(t => toExclude.Contains(t) == false);
 
             return normalized;
         }
@@ -147,12 +133,6 @@ namespace CommandLine.Core
             string value,
             Func<string, NameLookupResult> nameLookup)
         {
-            //Allow single dash as a value
-            if (value.Length == 1 && value[0] == '-')
-            {
-                yield return Token.Value(value);
-                yield break;
-            }
             if (value.Length > 1 && value[0] == '-' && value[1] != '-')
             {
                 var text = value.Substring(1);

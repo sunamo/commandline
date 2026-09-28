@@ -1,8 +1,5 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CommandLine.Core;
@@ -10,10 +7,7 @@ using CommandLine.Infrastructure;
 using CSharpx;
 
 namespace CommandLine
-{
-    /// <summary>
-    /// Provides settings for when formatting command line from an options instance../>.
-    /// </summary>
+
     public class UnParserSettings
     {
         private bool preferShortName;
@@ -83,7 +77,7 @@ namespace CommandLine
             return new UnParserSettings { UseEqualToken = true };
         }
 
-        internal bool Consumed { get; set; }
+        public bool Consumed { get; set; }
     }
 
     /// <summary>
@@ -101,18 +95,6 @@ namespace CommandLine
         public static string FormatCommandLine<T>(this Parser parser, T options)
         {
             return parser.FormatCommandLine(options, config => { });
-        }
-
-        /// <summary>
-        /// Format a command line argument string from a parsed instance in the form of string[]. 
-        /// </summary>
-        /// <typeparam name="T">Type of <paramref name="options"/>.</typeparam>
-        /// <param name="parser">Parser instance.</param>
-        /// <param name="options">A parsed (or manually correctly constructed instance).</param>
-        /// <returns>A string[] with command line arguments.</returns>
-        public static string[] FormatCommandLineArgs<T>(this Parser parser, T options)
-        {
-            return parser.FormatCommandLine(options, config => { }).SplitArgs();
         }
 
         /// <summary>
@@ -153,9 +135,7 @@ namespace CommandLine
 
             var allOptSpecs = from info in specs.Where(i => i.Specification.Tag == SpecificationType.Option)
                               let o = (OptionSpecification)info.Specification
-                              where o.TargetType != TargetType.Switch ||
-                                   (o.TargetType == TargetType.Switch && o.FlagCounter && ((int)info.Value > 0)) ||
-                                   (o.TargetType == TargetType.Switch && ((bool)info.Value))
+                              where o.TargetType != TargetType.Switch || (o.TargetType == TargetType.Switch && ((bool)info.Value))
                               where !o.Hidden || settings.ShowHidden
                               orderby o.UniqueName()
                               select info;
@@ -178,12 +158,7 @@ namespace CommandLine
 
             builder = settings.GroupSwitches && shortSwitches.Any()
                 ? builder.Append('-').Append(string.Join(string.Empty, shortSwitches.Select(
-                    info => {
-                        var o = (OptionSpecification)info.Specification;
-                        return o.FlagCounter
-                            ? string.Concat(Enumerable.Repeat(o.ShortName, (int)info.Value))
-                            : o.ShortName;
-                    }).ToArray())).Append(' ')
+                    info => ((OptionSpecification)info.Specification).ShortName).ToArray())).Append(' ')
                 : builder;
             optSpecs.ForEach(
                 opt =>
@@ -200,19 +175,7 @@ namespace CommandLine
             return builder
                 .ToString().TrimEnd(' ');
         }
-        /// <summary>
-        /// Format a command line argument string[] from a parsed instance. 
-        /// </summary>
-        /// <typeparam name="T">Type of <paramref name="options"/>.</typeparam>
-        /// <param name="parser">Parser instance.</param>
-        /// <param name="options">A parsed (or manually correctly constructed instance).</param>
-        /// <param name="configuration">The <see cref="Action{UnParserSettings}"/> lambda used to configure
-        /// aspects and behaviors of the unparsersing process.</param>
-        /// <returns>A string[] with command line arguments.</returns>
-        public static string[] FormatCommandLineArgs<T>(this Parser parser, T options, Action<UnParserSettings> configuration)
-        {
-            return FormatCommandLine<T>(parser, options, configuration).SplitArgs();
-        }
+
         private static string FormatValue(Specification spec, object value)
         {
             var builder = new StringBuilder();
@@ -228,7 +191,7 @@ namespace CommandLine
                     var e = ((IEnumerable)value).GetEnumerator();
                     while (e.MoveNext())
                         builder.Append(format(e.Current)).Append(sep);
-                    builder.TrimEndIfMatch(sep);
+                    builderSH.TrimEndIfMatch(sep);
                     break;
             }
             return builder.ToString();
@@ -236,16 +199,14 @@ namespace CommandLine
 
         private static object FormatWithQuotesIfString(object value)
         {
-            string s = value.ToString();
-            if (!string.IsNullOrEmpty(s) && !s.Contains("\"") && s.Contains(" "))
-                return $"\"{s}\"";
-
+            if (value is DateTime || value is DateTimeOffset) return $"\"{value}\"";
             Func<string, string> doubQt = v
                 => v.Contains("\"") ? v.Replace("\"", "\\\"") : v;
 
-            return s.ToMaybe()
-                    .MapValueOrDefault(v => v.Contains(' ') || v.Contains("\"")
-                        ? "\"".JoinTo(doubQt(v), "\"") : v, value);
+            return (value as string)
+                .ToMaybe()
+                .MapValueOrDefault(v => v.Contains(' ') || v.Contains("\"")
+                    ? "\"".JoinTo(doubQt(v), "\"") : v, value);
         }
 
         private static char SeperatorOrSpace(this Specification spec)
@@ -257,25 +218,24 @@ namespace CommandLine
         private static string FormatOption(OptionSpecification spec, object value, UnParserSettings settings)
         {
             return new StringBuilder()
-                    .Append(spec.FormatName(value, settings))
+                    .Append(spec.FormatName(settings))
                     .AppendWhen(spec.TargetType != TargetType.Switch, FormatValue(spec, value))
                 .ToString();
         }
 
-        private static string FormatName(this OptionSpecification optionSpec, object value, UnParserSettings settings)
+        private static string FormatName(this OptionSpecification optionSpec, UnParserSettings settings)
         {
             // Have a long name and short name not preferred? Go with long! 
             // No short name? Has to be long!
             var longName = (optionSpec.LongName.Length > 0 && !settings.PreferShortName)
                          || optionSpec.ShortName.Length == 0;
 
-            var formattedName =
+            return
                 new StringBuilder(longName
                     ? "--".JoinTo(optionSpec.LongName)
                     : "-".JoinTo(optionSpec.ShortName))
                         .AppendWhen(optionSpec.TargetType != TargetType.Switch, longName && settings.UseEqualToken ? "=" : " ")
                     .ToString();
-            return optionSpec.FlagCounter ? String.Join(" ", Enumerable.Repeat(formattedName, (int)value)) : formattedName;
         }
 
         private static object NormalizeValue(this object value)
@@ -306,35 +266,5 @@ namespace CommandLine
             if (value is IEnumerable && !((IEnumerable)value).GetEnumerator().MoveNext()) return true;
             return false;
         }
-
-
-        #region splitter
-        /// <summary>
-        /// Returns a string array that contains the substrings in this instance that are delimited by space considering string between double quote.
-        /// </summary>
-        /// <param name="command">the commandline string</param>
-        /// <param name="keepQuote">don't remove the quote</param>
-        /// <returns>a string array that contains the substrings in this instance</returns>
-        public static string[] SplitArgs(this string command, bool keepQuote = false)
-        {
-            if (string.IsNullOrEmpty(command))
-                return new string[0];
-
-            var inQuote = false;
-            var chars = command.ToCharArray().Select(v =>
-            {
-                if (v == '"')
-                    inQuote = !inQuote;
-                return !inQuote && v == ' ' ? '\n' : v;
-            }).ToArray();
-
-            return new string(chars).Split('\n')
-                .Select(x => keepQuote ? x : x.Trim('"'))
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToArray();
-        }
-
-        #endregion
-
     }
 }

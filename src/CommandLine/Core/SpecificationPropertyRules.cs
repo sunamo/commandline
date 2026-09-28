@@ -1,26 +1,15 @@
-// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
-
 using CSharpx;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace CommandLine.Core
-{
+
     static class SpecificationPropertyRules
     {
         public static IEnumerable<Func<IEnumerable<SpecificationProperty>, IEnumerable<Error>>>
             Lookup(
                 IEnumerable<Token> tokens)
-        {
-            return Lookup(tokens, false);
-        }
-
-        public static IEnumerable<Func<IEnumerable<SpecificationProperty>, IEnumerable<Error>>>
-            Lookup(
-                IEnumerable<Token> tokens,
-                bool allowMultiInstance)
         {
             return new List<Func<IEnumerable<SpecificationProperty>, IEnumerable<Error>>>
                 {
@@ -29,7 +18,7 @@ namespace CommandLine.Core
                     EnforceMutuallyExclusiveSetAndGroupAreNotUsedTogether(),
                     EnforceRequired(),
                     EnforceRange(),
-                    EnforceSingle(tokens, allowMultiInstance)
+                    EnforceSingle(tokens)
                 };
         }
 
@@ -181,15 +170,10 @@ namespace CommandLine.Core
                 };
         }
 
-        private static Func<IEnumerable<SpecificationProperty>, IEnumerable<Error>> EnforceSingle(IEnumerable<Token> tokens, bool allowMultiInstance)
+        private static Func<IEnumerable<SpecificationProperty>, IEnumerable<Error>> EnforceSingle(IEnumerable<Token> tokens)
         {
             return specProps =>
                 {
-                    if (allowMultiInstance)
-                    {
-                        return Enumerable.Empty<Error>();
-                    }
-
                     var specs = from sp in specProps
                                 where sp.Specification.IsOption()
                                 where sp.Value.IsJust()

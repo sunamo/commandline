@@ -1,4 +1,4 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
+// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace CommandLine
             settings.Consumed = true;
         }
 
-        internal Parser(ParserSettings settings)
+        public Parser(ParserSettings settings)
         {
             this.settings = settings;
             this.settings.Consumed = true;
@@ -101,7 +101,6 @@ namespace CommandLine
                     settings.ParsingCulture,
                     settings.AutoHelp,
                     settings.AutoVersion,
-                    settings.AllowMultiInstance,
                     HandleUnknownArguments(settings.IgnoreUnknownArguments)),
                 settings);
         }
@@ -132,7 +131,6 @@ namespace CommandLine
                     settings.ParsingCulture,
                     settings.AutoHelp,
                     settings.AutoVersion,
-                    settings.AllowMultiInstance,
                     HandleUnknownArguments(settings.IgnoreUnknownArguments)),
                 settings);
         }
@@ -165,7 +163,6 @@ namespace CommandLine
                     settings.ParsingCulture,
                     settings.AutoHelp,
                     settings.AutoVersion,
-                    settings.AllowMultiInstance,
                     HandleUnknownArguments(settings.IgnoreUnknownArguments)),
                 settings);
         }
@@ -185,13 +182,8 @@ namespace CommandLine
                 IEnumerable<OptionSpecification> optionSpecs,
                 ParserSettings settings)
         {
-            return settings.GetoptMode
-                ? GetoptTokenizer.ConfigureTokenizer(
-                    settings.NameComparer,
-                    settings.IgnoreUnknownArguments,
-                    settings.EnableDashDash,
-                    settings.PosixlyCorrect)(arguments, optionSpecs)
-                : Tokenizer.ConfigureTokenizer(
+            return
+                Tokenizer.ConfigureTokenizer(
                     settings.NameComparer,
                     settings.IgnoreUnknownArguments,
                     settings.EnableDashDash)(arguments, optionSpecs);
