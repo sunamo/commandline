@@ -1,5 +1,5 @@
 ---
-schema_version: 4
+schema_version: 5
 type: library
 file_count: 245
 delete_recommendation_percent: 10
@@ -7,6 +7,9 @@ generated_date: 2026-09-30
 generated_time: 16:31:31
 github_origin: yes
 github_source_url: https://github.com/commandlineparser/commandline
+first_commit_date: 2012-05-05
+last_commit_date: 2026-09-29
+commit_count: 1886
 ---
 
 ## Description
@@ -26,3 +29,11 @@ Doporučení ke smazání: **10 %** — fork oblíbené open source knihovny, ne
 - Zachovává celou historii (1889 commitů) a licenci upstreamu.
 - Vlastní část jsou úpravy snímku `CommandLineParserFw` (4 commity), které by po smazání zanikly.
 - Knihovna je aktivně používaná (balíček `CommandLineParser` na NuGetu).
+
+## Historie commitů
+
+- První commit: 2012-05-05
+- Poslední commit: 2026-09-29
+- Celkem commitů: 1886
+
+- Počítá se bez commitů, které jen generovaly RESUME.cs.md nebo README.md.
