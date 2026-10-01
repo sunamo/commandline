@@ -6,6 +6,10 @@
 
 # Command Line Parser Library for CLR and NetStandard
 
+## Short description
+
+Fork knihovny CommandLineParser (Command Line Parser Library for CLR and NetStandard) pro zpracování argumentů příkazové řádky a nápovědy. Obsahuje zdroje v `src/CommandLine`, testy, ukázky (C# i VB) a stav odpovídá `CommandLineParserFw` na základě v2.9.0-preview1 s vlastními úpravami.
+
 **Note:** the API surface has changed since v1.9.x and earlier. If you are looking for documentation on v1.9.x, please see [stable-1.9.71.2](https://github.com/gsscoder/commandline/tree/stable-1.9.71.2)
 
 The Command Line Parser Library offers CLR applications a clean and concise API for manipulating command line arguments and related tasks, such as defining switches, options and verb commands. It allows you to display a help screen with a high degree of customization and a simple way to report syntax errors to the end user.

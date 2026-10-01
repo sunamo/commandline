@@ -1,15 +1,17 @@
 ---
-schema_version: 5
+schema_version: 6
 type: library
 file_count: 245
-delete_recommendation_percent: 10
-generated_date: 2026-09-30
-generated_time: 16:31:31
-github_origin: yes
+avg_lines_per_file: 108
+move_to_legacy_percent: 10
+generated_date: 2026-10-01
+generated_time: 16:40:31
 github_source_url: https://github.com/commandlineparser/commandline
-first_commit_date: 2012-05-05
-last_commit_date: 2026-09-29
-commit_count: 1886
+last_build_ok: 
+last_build_date: 
+last_tests_run_date: 
+covered_lines: 
+total_lines: 
 ---
 
 ## Description
@@ -22,18 +24,15 @@ Staženo z GitHubu: **ano** — [commandlineparser/commandline](https://github.c
 
 - Zdroj určen podle: `gh api repos/sunamo/commandline` vrací `fork: true`, `parent: commandlineparser/commandline`; historie 1889 commitů od desítek cizích autorů (Giacomo Stelluti Scala, Eric Newton, ...); shoda git hashe 67 z 205 souborů `.cs/.vb/.md/.snk/.sln` s upstreamem (např. `CommandLine.snk`, `License.md`, `README.md`, `CHANGELOG.md`); README a licence jsou od původních autorů.
 
-## Doporučení ke smazání
+## Doporučení přesunu do legacy
 
-Doporučení ke smazání: **10 %** — fork oblíbené open source knihovny, nemazat kvůli vlastním úpravám a zachování historie.
+Doporučení přesunu do sunamocz-legacy.visualstudio.com: **10 %** — fork oblíbené open source knihovny, nepřesouvat kvůli vlastním úpravám a zachování historie.
 
 - Zachovává celou historii (1889 commitů) a licenci upstreamu.
 - Vlastní část jsou úpravy snímku `CommandLineParserFw` (4 commity), které by po smazání zanikly.
 - Knihovna je aktivně používaná (balíček `CommandLineParser` na NuGetu).
 
-## Historie commitů
+## Vazby na moje repa
 
-- První commit: 2012-05-05
-- Poslední commit: 2026-09-29
-- Celkem commitů: 1886
-
-- Počítá se bez commitů, které jen generovaly RESUME.cs.md nebo README.md.
+- Submoduly: žádné
+- ProjectReference / PackageReference: FluentAssertions
