@@ -35,4 +35,4 @@ Doporučení přesunu do sunamocz-legacy.visualstudio.com: **10 %** — fork obl
 ## Vazby na moje repa
 
 - Submoduly: žádné
-- ProjectReference / PackageReference: FluentAssertions
+- ProjectReference / PackageReference: žádné
