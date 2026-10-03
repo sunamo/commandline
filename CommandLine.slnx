@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Tests/">
+    <Project Path="tests/CommandLine.Tests/CommandLine.Tests.csproj" />
+  </Folder>
+  <Project Path="src/CommandLine/CommandLine.csproj" />
+  <Properties Name="MonoDevelopProperties">
+    <Property Name="StartupItem" Value="src\CommandLine\CommandLine.csproj" />
+  </Properties>
+</Solution>

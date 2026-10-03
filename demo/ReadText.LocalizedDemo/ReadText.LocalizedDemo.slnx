@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../../src/CommandLine/CommandLine.csproj" />
+  <Project Path="ReadText.LocalizedDemo.csproj" />
+</Solution>
