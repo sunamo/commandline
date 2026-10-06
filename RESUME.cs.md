@@ -1,17 +1,26 @@
 ---
-schema_version: 7
+schema_version: 11
 type: forked-notmine-library
+category_override: none
 file_count: 245
+file_extensions: cs:189, md:6, png:6, vb:6, config:5, noext:5, csproj:4, fsx:4, slnx:4, resx:3, cshtml:1, json:1, manifest:1, myapp:1, pdn:1, props:1, settings:1, snk:1, svclog:1, user:1, vbproj:1, xml:1, yml:1
+file_extensions_updated: 2026-10-04
 avg_lines_per_file: 108
+total_lines: 21298
+metrics_lm: 2026-10-01 16:40:31
 move_to_legacy_percent: 10
-generated_date: 2026-10-01
-generated_time: 16:40:31
+description_updated: 2026-10-01
+links_updated: 2026-10-01
 github_source_url: https://github.com/commandlineparser/commandline
+origin_status: found
+origin_checked: 2026-10-01
+article_source_url: not run
+article_status: pending
+article_checked: not run
 last_build_ok: no
 last_build_date: 2026-10-02
-last_tests_run_date: n/a
-covered_lines: n/a
-total_lines: 21298
+last_tests_run_date: not run
+covered_lines: not run
 ---
 
 ## Description
